@@ -12,7 +12,7 @@ using CairoMakie
 CairoMakie.activate!()
 
 # Load and preprocess data
-raw_data_path = joinpath(@__DIR__, "..", "data", "raw", "climate_data.csv")
+raw_data_path = joinpath(@__DIR__, "..", "data", "raw", "DailyDelhiClimate.csv")
 processed_data_path = joinpath(@__DIR__, "..", "data", "processed", "preprocessed_data.csv")
 
 # Download data if it doesn't exist

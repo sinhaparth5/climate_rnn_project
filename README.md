@@ -22,4 +22,6 @@ Pkg.activate(".")
 Pkg.develop(path="ClimateRNN")
 Pkg.resolve()
 Pkg.instantiate()
+
+include("notebooks/exploration.jl")
 ```
