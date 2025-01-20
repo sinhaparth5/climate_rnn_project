@@ -26,3 +26,7 @@ Manifest.toml
 
 # Results folder
 results/models
+
+
+# IDEs
+.vscode
