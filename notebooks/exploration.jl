@@ -15,11 +15,6 @@ CairoMakie.activate!()
 raw_data_path = joinpath(@__DIR__, "..", "data", "raw", "DailyDelhiClimate.csv")
 processed_data_path = joinpath(@__DIR__, "..", "data", "processed", "preprocessed_data.csv")
 
-# Download data if it doesn't exist
-if !isfile(raw_data_path)
-    download_climate_data()
-end
-
 # Preprocess the data
 df = preprocess_data(raw_data_path, processed_data_path)
 
@@ -33,7 +28,7 @@ X_data = Matrix(df[!, features])
 y_data = df.meantemp
 
 # Create sequences for RNN training
-seq_length = 30  # Use 30 days of data to predict the next day
+seq_length = 30  # Back to original sequence length
 X, y = create_sequences(X_data, y_data, seq_length)
 
 # Split data into training and validation sets
@@ -44,26 +39,23 @@ y_train = y[1:train_size]
 X_val = X[train_size+1:end, :, :]
 y_val = y[train_size+1:end]
 
-# Initialize RNN
+# Initialize RNN with smaller hidden size
 input_size = length(features)
-hidden_size = 32
+hidden_size = 32  # Back to original hidden size
 output_size = 1
-rnn = init_rnn(input_size, hidden_size, output_size, dropout_rate=0.2)
+rnn = init_rnn(input_size, hidden_size, output_size, dropout_rate=0.1)  # Lower dropout
 
 # Training parameters
 epochs = 100
-learning_rate = 0.01
+learning_rate = 0.001  # Lower learning rate
 batch_size = 32
 
 # Train the model
 println("\nTraining the RNN model...")
 train_losses, val_losses = train_rnn(rnn, X_train, y_train, X_val, y_val, 
-                                   epochs, learning_rate, batch_size)
-
-# Plot training progress
-println("\nTraining Progress:")
-quick_plot = quick_training_plot(train_losses, val_losses)
-println(quick_plot)
+                                   epochs, learning_rate, batch_size,
+                                   momentum=0.9, lr_decay=0.99,  # Slower decay
+                                   grad_clip=1.0)  # Conservative gradient clipping
 
 # Generate predictions
 println("\nGenerating predictions...")
@@ -97,15 +89,5 @@ save(joinpath(results_dir, "feature_importance.png"), fig3)
 # Correlation heatmap
 fig4 = correlation_heatmap(df, features)
 save(joinpath(results_dir, "correlation_heatmap.png"), fig4)
-
-# Quick terminal visualization of predictions
-println("\nQuick Prediction View:")
-println(quick_prediction_plot(y_val, vec(y_pred_val)))
-
-# Save trained model
-println("\nSaving trained model...")
-model_path = joinpath(@__DIR__, "..", "results", "models", "trained_model.jld2")
-mkpath(dirname(model_path))
-@save model_path rnn
 
 println("\nAnalysis complete! Results saved in the 'results' directory.")
